@@ -177,7 +177,7 @@ impl<T> List<T> {
     pub fn len(&self) -> usize { self.len }
 
 	/// Returns true if list is empty in O(1);
-	fn is_empty(&self) -> bool { self.head.is_none() }
+	pub fn is_empty(&self) -> bool { self.head.is_none() }
 
 	/// Push a new element at the front of the list in O(1).
 	/// Cannot fails, only panic!/OOM on memory exhaustion.
@@ -285,21 +285,24 @@ impl<T> List<T> {
 		}
 	}
 
-	fn front(&self) -> Option<&T> {
+    /// Returns a reference to the first element in the list.
+	pub fn front(&self) -> Option<&T> {
 		self.head.as_ref().map(|link| {
 			let Node(ref v, _) = **link;
 			v
 		})
 	}
 
-	fn front_mut(&mut self) -> Option<&mut T> {
+    /// Returns a mutable reference to the first element in the list.
+	pub fn front_mut(&mut self) -> Option<&mut T> {
 		self.head.as_mut().map(|link| {
 			let Node(ref mut v, _) = **link;
 			v
 		})
 	}
 
-	fn back(&self) -> Option<&T> {
+    /// Returns a reference to the last element in the list.
+	pub fn back(&self) -> Option<&T> {
 		let mut head_link = &self.head;
 		while let Some(ref node) = *head_link {
 			let Node(ref v, ref next_link) = **node;
@@ -311,7 +314,8 @@ impl<T> List<T> {
 		None
 	}
 
-	fn back_mut(&mut self) -> Option<&mut T> {
+    /// Returns a mutable reference to the last element in the list.
+	pub fn back_mut(&mut self) -> Option<&mut T> {
 		self.penultimate_link().and_then(|link| {
 			link.as_mut().map(|node| {
 				let Node(ref mut v, _) = **node;
