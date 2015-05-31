@@ -1,4 +1,4 @@
-#  fwdlist
+#  fwdlist - [documentation reference](http://bombela.github.io/fwdlist/fwdlist/struct.List.html)
 
 [![Build Status](https://travis-ci.org/bombela/fwdlist.svg?branch=master)](https://travis-ci.org/bombela/fwdlist)
 
