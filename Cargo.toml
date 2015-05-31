@@ -4,8 +4,6 @@ version = "0.1.0"
 authors = ["François-Xavier Bourlet <bombela@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/bombela/fwdlist"
+documentation = "http://bombela.github.io/fwdlist"
 description = "A simply linked (forward) list"
 keywords = ["list", "forward", "collection", "simply", "linked"]
-
-[features]
-some_unsafe = []
