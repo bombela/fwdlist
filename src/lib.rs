@@ -437,6 +437,8 @@ impl<T> Iterator for ListIntoIter<T> {
     }
 }
 
+impl<T> ExactSizeIterator for ListIntoIter<T> {}
+
 /// `for v in my_list { v ... }`
 impl<T> IntoIterator for List<T> {
     type Item = T;
@@ -492,6 +494,8 @@ impl<'a, T> Iterator for ListIter<'a, T> {
         (len, Some(len))
     }
 }
+
+impl<'a, T> ExactSizeIterator for ListIter<'a, T> {}
 
 /// `for v in &my_list { *v ... }`
 impl<'a, T> IntoIterator for &'a List<T> {
@@ -559,6 +563,8 @@ impl<'a, T> Iterator for ListIterMut<'a, T> {
         (len, Some(len))
     }
 }
+
+impl<'a, T> ExactSizeIterator for ListIterMut<'a, T> {}
 
 /// `for v in &mut my_list { *v = ... }`
 impl<'a, T> IntoIterator for &'a mut List<T> {
