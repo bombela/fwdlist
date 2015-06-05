@@ -522,8 +522,8 @@ fn ref_iter() {
     assert_eq!(l.len(), 9);
 }
 
-/// Mutable iterator over a list. Provides few extra functions to modify the list at the point
-/// of iteration.
+/// Mutable iterator over a list. Provides few extra functions to modify the
+/// list at the point of iteration.
 pub struct ListIterMut<'a, T: 'a> {
     next_link: &'a mut Link<T>,
     len: usize,
@@ -609,15 +609,16 @@ impl<'a, T> ListIterMut<'a, T> {
         })
     }
 
-    /// Returns a mutable reference to the next element, without moving the iterator.
+    /// Returns a mutable reference to the next element, without moving the
+    /// iterator.
     pub fn peek_next_mut(&mut self) -> Option<&mut T> {
         self.next_link.as_mut().map(|node| {
-            let Node(ref mut v, _) = **node;
-            v
+            let Node(ref mut v, _) = **node; v
         })
     }
 
-    /// Insert `v` just after the element most recently returned by `.next()` in O(1).
+    /// Insert `v` just after the element most recently returned by `.next()` in
+    /// O(1).
     ///
     /// The inserted element does not appear in the iteration.
     pub fn insert_next(&mut self, v: T) {
@@ -633,9 +634,11 @@ impl<'a, T> ListIterMut<'a, T> {
         *self.list_len += 1;
     }
 
-    /// Remove the element after the one most recently returned by `.next()` in O(1);
+    /// Remove the element after the one most recently returned by `.next()` in
+    /// O(1);
     ///
-    /// Returns the removed value or None if the iterator is already at the end of the list.
+    /// Returns the removed value or None if the iterator is already at the end
+    /// of the list.
     pub fn remove_next(&mut self) -> Option<T> {
         self.next_link.take().map(|node| {
             let Node(v, tail_link) = *{node};
@@ -646,11 +649,13 @@ impl<'a, T> ListIterMut<'a, T> {
         })
     }
 
-    /// Truncate the list right after the element most recently return by `.next()` in O(1).
+    /// Truncate the list right after the element most recently return by
+    /// `.next()` in O(1).
     ///
-    /// * returns a new list owning the rest of the truncated list.
-    /// * the iterator is now at the end of the freshly truncated list.
-    /// * returns an empty list if the iterator is already exhausted.
+    /// * returns a new list owning all the elements after the one most recently
+    /// returned by `.next()`.
+    /// * the iterator is now exhausted since the list got truncated.
+    /// * returns an empty list if the iterator was already exhausted.
     pub fn truncate_next(&mut self) -> List<T> {
         let tail_link = self.next_link.take();
         *self.list_len -= self.len;
@@ -733,7 +738,8 @@ impl<T> FromIterator<T> for List<T> {
 
 /// Clone a list in O(n).
 ///
-/// `clone_from()` will reuse as many nodes of `self` as possible to avoid reallocation;
+/// `clone_from()` will reuse as many nodes from `self` as possible to avoid
+/// reallocation.
 impl<T: Clone> Clone for List<T> {
     fn clone(&self) -> List<T> {
         self.iter().cloned().collect()
