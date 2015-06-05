@@ -422,6 +422,7 @@ fn penultimate_with_unsafe(b: &mut Bencher) {
 }
 
 /// Iterator consuming a list.
+#[derive(Clone)]
 pub struct ListIntoIter<T> {
     list: List<T>
 }
@@ -464,9 +465,21 @@ fn into_iter() {
 }
 
 /// Read-only iterator over a list.
+// Can't use derive(Clone) here because it will require an extra Clone bound for
+// T which we don't need.
+// #[derive(Clone)]
 pub struct ListIter<'a, T: 'a> {
     next_link: &'a Link<T>,
     len: usize,
+}
+
+impl<'a, T> Clone for ListIter<'a, T> {
+    fn clone(&self) -> ListIter<'a, T> {
+        ListIter{
+            next_link: self.next_link,
+            len: self.len,
+        }
+    }
 }
 
 impl<T> List<T> {
@@ -520,6 +533,27 @@ fn ref_iter() {
     }
     assert_eq!(acc, 45);
     assert_eq!(l.len(), 9);
+}
+
+#[test]
+fn ref_iter_clone() {
+    struct NotClonable(usize);
+    let mut l = List::new();
+    for i in 1..10 {
+        l.push_back(NotClonable(i));
+    }
+    assert_eq!(l.len(), 9);
+    let i = l.iter();
+    let i2 = i.clone();
+
+    for j in &mut [i, i2] {
+        let mut acc = 0;
+        for v in j {
+            acc += v.0;
+        }
+        assert_eq!(acc, 45);
+        assert_eq!(l.len(), 9);
+    }
 }
 
 /// Mutable iterator over a list. Provides few extra functions to modify the
