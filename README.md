@@ -129,7 +129,7 @@ We basically get the following report:
 
 `penultimate_link()` is faster than `penultimate_with_unsafe()` on real hardware.
 
-Benchmarks with List\<i64\> and BIGLIST_SIZE=2^20 (list takes ~16Mib):
+Benchmarks with List\<i64\> and BIGLIST_SIZE=2<sup>20</sup> (list takes ~16Mib):
 
 ```text
 AMD Phenom(tm) II X4 965 Processor
@@ -145,7 +145,7 @@ penultimate_safe        ... bench:   1675111 ns/iter (+/- 106477)
 penultimate_with_unsafe ... bench:   2127297 ns/iter (+/- 128966)
 ```
 
-Benchmarks with List\<i64\> and BIGLIST_SIZE=2^30 (list takes ~16Gib):
+Benchmarks with List\<i64\> and BIGLIST_SIZE=2<sup>30</sup> (list takes ~16Gib):
 
 ```text
 Intel(R) Xeon(R) CPU E5-1650 0 @ 3.20GHz
