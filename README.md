@@ -4,25 +4,27 @@
 
 A simple forward linked list.
 
-It's a linked list. Its not cache friendly, its relatively slow when you think about it, but it
-allows for O(1) insertion... after the current iterator location, maybe you care about that.
+It's a linked list. Its not cache friendly, its relatively slow when you think
+about it, but it allows for O(1) insertion... after the current iterator
+location, maybe you care about that.
 
 # Avoiding unsafe
-The goal here is to play with Rust and see how much unsafe is needed. It turns out that you can
-implement everything but the mutable iterator without using unsafe.
+The goal here is to play with Rust and see how much unsafe is needed. It turns
+out that you can implement everything but the mutable iterator without using
+unsafe.
 
-The mutable iterator needs unsafe only because it returns a mutable reference with a different
-lifetime than the mutable reference on the iterator itself. The compiler cannot infer that
-auto-magically and needs a bit of our help.
+The mutable iterator needs unsafe only because it returns a mutable reference
+with a different lifetime than the mutable reference on the iterator itself. The
+compiler cannot infer that auto-magically and needs a bit of our help.
 
 # penultimate_link() performances
 
-Sometimes the code feels a more convoluted than necessary to please the borrow checker.  Some
-unsafe code would make the code not only easier to read, but also *we naively believe*, more
-efficient for the machine.
+Sometimes the code feels a more convoluted than necessary to please the borrow
+checker.  Some unsafe code would make the code not only easier to read, but also
+*we naively believe*, more efficient for the machine.
 
-The best example here is `penultimate_link()`, which returns a mutable reference to the
-last but one link of the list.
+The best example here is `penultimate_link()`, which returns a mutable reference
+to the last but one link of the list.
 
 To illustrate what this function returns, let's assume the following list:
 
@@ -30,10 +32,12 @@ To illustrate what this function returns, let's assume the following list:
 head_link -> node1.next -> node2.next -> node3.next -> nil
 ```
 
-In this case, `penultimate_link()` will return a mutable reference to `node2.next`. It is then
-trivial to implement `pop_back()` with a simple `Option.take()`.
+In this case, `penultimate_link()` will return a mutable reference to
+`node2.next`. It is then trivial to implement `pop_back()` with a simple
+`Option.take()`.
 
-See `penultimate_link()` and `penultimate_link_with_unsafe()` implementations further below.
+See `penultimate_link()` and `penultimate_link_with_unsafe()` implementations
+further below.
 
 ## Assembly output
 
@@ -77,25 +81,27 @@ Take a look at the assembly outputs (cargo build --release) below:
 ```
 ## Assembly quick analysis
 
-The first thing to note, is how well the original code is translated from high level Option and
-Box to simple null-able pointers.
+The first thing to note, is how well the original code is translated from high
+level Option and Box to simple null-able pointers.
 
-* `penultimate_link()` is a loop with two conditional branches inside, and it tests twice every
-nodes of the list (exactly like in the Rust code). One test on every next_link, before testing
-it again when it become the new link to work on new every new iteration.
-* `penultimate_with_unsafe()` is a loop with only one condition, but it keeps a “prev_link”
-pointer handy, again like in the Rust code.
+* `penultimate_link()` is a loop with two conditional branches inside, and it
+  tests twice every nodes of the list (exactly like in the Rust code). One test
+on every next_link, before testing it again when it become the new link to work
+on new every new iteration.
+* `penultimate_with_unsafe()` is a loop with only one condition, but it keeps a
+  “prev_link” pointer handy, again like in the Rust code.
 
-Looking at the assembly with my ridiculously weak knowledge of modern CPU architecture, I infer
-that `penultimate_link()` requires twice the amount of branches predictions and both functions
-perform two data read per iteration.
+Looking at the assembly with my ridiculously weak knowledge of modern CPU
+architecture, I infer that `penultimate_link()` requires twice the amount of
+branches predictions and both functions perform two data read per iteration.
 
-Considering how modern CPUs seems to pipeline/pre-fetch like crazy, the two branchs predictions
-should pretty much cost like only one.
+Considering how modern CPUs seems to pipeline/pre-fetch like crazy, the two
+branchs predictions should pretty much cost like only one.
 
 ## Callgrind/Cachegrind (valgrind) analysis
 
-After adding `#[inline(never)]` on both `penultimate_link*` functions, I ran valgrind like so:
+After adding `#[inline(never)]` on both `penultimate_link*` functions, I ran
+valgrind like so:
 
 ```sh
 $ valgrind --tool=callgrind --dump-instr=yes --trace-jump=yes --cache-sim=yes --branch-sim=yes --collect-atstart=no --toggle-collect=*penultimate_link* target/release/fwdlist... --test one_penultimate
@@ -107,22 +113,23 @@ We basically get the following report:
 | safe_only | 6,291,459 | 2,097,152 | 1 261,697 | 236,874 | 2,097,151 | 4   |
 | unsafe    | 5,242,886 | 2,097,154 | 1 261,697 | 238,678 | 1,048,577 | 5   |
 
-* **Ir**: instruction read, `penultimate_link()` has more instructions and so more instruction
-read.
-* **Dr**: data read. `penultimate_with_unsafe()` performs one more loop iteration, reading
-**2** more data.
+* **Ir**: instruction read, `penultimate_link()` has more instructions and so
+  more instruction read.
+* **Dr**: data read. `penultimate_with_unsafe()` performs one more loop
+  iteration, reading **2** more data.
 * **D1mr**: data read misses on L1 cache. Similar between the two.
-* **DLmr**: data read misses on Last Level cache. Interestingly, `penultimate_with_unsafe()`
-has more misses.
-* **Bc**: Conditional branches. Confirms that `penultimate_link()` has two vs one conditions.
-* **Bcm**: Conditional branches misses. `penultimate_with_unsafe()` gets one more, maybe the
-extra iteration?
+* **DLmr**: data read misses on Last Level cache. Interestingly,
+  `penultimate_with_unsafe()` has more misses.
+* **Bc**: Conditional branches. Confirms that `penultimate_link()` has two vs
+  one conditions.
+* **Bcm**: Conditional branches misses. `penultimate_with_unsafe()` gets one
+  more, maybe the extra iteration?
 
 ## Benchmark
 
 `penultimate_link()` is faster than `penultimate_with_unsafe()` on real hardware.
 
-Benchmarks with List\<i64\> and BIGLIST_SIZE=1Mib (list takes ~16Mib):
+Benchmarks with List\<i64\> and BIGLIST_SIZE=2^20 (list takes ~16Mib):
 
 ```text
 AMD Phenom(tm) II X4 965 Processor
@@ -138,7 +145,7 @@ penultimate_safe        ... bench:   1675111 ns/iter (+/- 106477)
 penultimate_with_unsafe ... bench:   2127297 ns/iter (+/- 128966)
 ```
 
-Benchmarks with List\<i64\> and BIGLIST_SIZE=1Gib (list takes ~16Gib):
+Benchmarks with List\<i64\> and BIGLIST_SIZE=2^30 (list takes ~16Gib):
 
 ```text
 Intel(R) Xeon(R) CPU E5-1650 0 @ 3.20GHz
@@ -147,12 +154,13 @@ penultimate_with_unsafe ... bench: 2509462341 ns/iter (+/- 377119880)
 ```
 ## Performances conclusion
 
-Convoluted safe code vs simpler unsafe code doesn't necessary mean that unsafe code is going to
-be faster. In our specific case `penultimate_with_unsafe()` is indeed slower!
+Convoluted safe code vs simpler unsafe code doesn't necessary mean that unsafe
+code is going to be faster. In our specific case `penultimate_with_unsafe()` is
+indeed slower!
 
-This is great because with safe Rust code only, the compiler basically proves for us that there
-is no possible memory bugs. Any code refactoring cannot possibly introduce memory bugs easier,
-the compiler wouldn't let it pass.
+This is great because with safe Rust code only, the compiler basically proves
+for us that there is no possible memory bugs. Any code refactoring cannot
+possibly introduce memory bugs easier, the compiler wouldn't let it pass.
 
 
 Happy hacking!
