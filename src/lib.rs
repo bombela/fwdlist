@@ -41,4 +41,24 @@ pub struct List<T> {
 
 type Link<T> = Option<Box<Node<T>>>;
 
-struct Node<T>(T, Link<T>);
+struct Node<T> {
+    value: T,
+    next: Link<T>,
+}
+
+impl<T> Node<T> {
+    fn new_boxed(v: T, next: Link<T>) -> Box<Node<T>> {
+        Box::new(Node {
+            value: v,
+            next: next,
+        })
+    }
+
+    fn take(self) -> (T, Link<T>) {
+        (self.value, self.next)
+    }
+
+    fn take_mut(&mut self) -> (&mut T, &mut Link<T>) {
+        (&mut self.value, &mut self.next)
+    }
+}

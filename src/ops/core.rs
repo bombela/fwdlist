@@ -16,7 +16,7 @@ impl<T> List<T> {
     /// Push a new element at the front of the list in O(1).
     /// Cannot fails, only panic!/OOM on memory exhaustion.
     pub fn push_front(&mut self, v: T) {
-        self.head = Some(Box::new(Node(v, self.head.take())));
+        self.head = Some(Node::new_boxed(v, self.head.take()));
         self.len += 1;
     }
 
@@ -24,17 +24,17 @@ impl<T> List<T> {
     /// Returns None if the list is empty.
     pub fn pop_front(&mut self) -> Option<T> {
         self.head.take().map(|node| {
-            let Node(v, tail_link) = *{node};
-            self.head = tail_link;
+            let (value, next) = node.take();
+            self.head = next;
             self.len -= 1;
-            v
+            value
         })
     }
 
     /// Push an element at the end of the list in O(n).
     /// Cannot fails, only panic!/OOM on memory exhaustion.
     pub fn push_back(&mut self, v: T) {
-        *self.last_link() = Some(Box::new(Node(v, None)));
+        *self.last_link() = Some(Node::new_boxed(v, None));
         self.len += 1;
     }
 
@@ -49,17 +49,15 @@ impl<T> List<T> {
             }
         };
         last_node.map(|last_node| {
-            let Node(value, _) = *last_node;
             self.len -= 1;
-            value
+            last_node.value
         })
     }
-   
+
     /// Clear the list in O(n).
     pub fn clear(&mut self) {
         while let Some(node) = self.head.take() {
-            let Node(_, next_link) = *node;
-            self.head = next_link;
+            self.head = node.next;
         }
     }
 }
@@ -98,7 +96,7 @@ mod benchs {
 
 extern crate test;
 
-use ::{List, Node};
+use ::{List};
 use self::test::{Bencher, black_box};
 
 static BIGLIST_SIZE: usize = 1024*1024;
@@ -122,8 +120,7 @@ fn one_penultimate_safe() {
     let mut l = make_biglist();
     let link = l.penultimate_link().unwrap();
     let node = link.as_ref().unwrap();
-    let Node(ref value, _) = **node;
-    assert_eq!(*value, BIGLIST_SIZE as i64 -1);
+    assert_eq!(node.value, BIGLIST_SIZE as i64 -1);
 }
 
 #[test]
@@ -131,8 +128,7 @@ fn one_penultimate_with_unsafe() {
     let mut l = make_biglist();
     let link = l.penultimate_link_with_unsafe().unwrap();
     let node = link.as_ref().unwrap();
-    let Node(ref value, _) = **node;
-    assert_eq!(*value, BIGLIST_SIZE as i64 -1);
+    assert_eq!(node.value, BIGLIST_SIZE as i64 -1);
 }
 
 

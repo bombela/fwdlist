@@ -66,17 +66,14 @@ impl<T> FromIterator<T> for List<T> {
 /// Extend the list from the content of `iter` in O(n).
 impl<T> Extend<T> for List<T> {
     fn extend<I>(&mut self, iter: I) where I: IntoIterator<Item=T> {
-        let mut last_link: *mut _ = self.last_link();
+        let mut tail_link: *mut _ = self.last_link();
         unsafe {
             for v in iter {
-                let mut node = Box::new(Node(v, None));
-                let next_link: *mut _ = {
-                    let Node(_, ref mut next_link_) = *node;
-                    next_link_
-                };
-                *last_link = Some(node);
+                let mut node = Node::new_boxed(v, None);
+                let next_link: *mut _ = &mut node.next;
+                *tail_link = Some(node);
                 self.len += 1;
-                last_link = &mut *next_link;
+                tail_link = &mut *next_link;
             }
         }
     }

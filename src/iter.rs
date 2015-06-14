@@ -1,4 +1,4 @@
-use ::{List, Link, Node};
+use ::{List, Link};
 
 /// Read-only iterator over a list.
 // Can't use derive(Clone) here because it will require an extra Clone bound for
@@ -29,10 +29,9 @@ impl<'a, T> Iterator for ListIter<'a, T> {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(ref node) = *self.next_link {
-            let Node(ref value, ref next_link) = **node;
-            self.next_link = next_link;
+            self.next_link = &node.next;
             self.len -= 1;
-            Some(value)
+            Some(&node.value)
         } else {
             None
         }

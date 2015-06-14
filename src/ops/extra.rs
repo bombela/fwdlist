@@ -1,5 +1,5 @@
 use std::{mem};
-use ::{List, Node};
+use ::{List};
 
 /// Extra operations on the list - **Unstable API**.
 impl<T> List<T> {
@@ -28,8 +28,7 @@ impl<T> List<T> {
                 break
             }
             if let Some(ref mut node) = *{head_link} {
-                let Node(_, ref mut next_link) = **node;
-                head_link = next_link;
+                head_link = &mut node.next;
                 i += 1;
             } else {
                 unreachable!();

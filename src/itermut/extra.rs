@@ -7,8 +7,7 @@ impl<'a, T> ListIterMut<'a, T> {
     /// Returns a reference to the next element, without moving the iterator.
     pub fn peek_next(&self) -> Option<&T> {
         self.next_link.as_ref().map(|node| {
-            let Node(ref v, _) = **node;
-            v
+            &node.value
         })
     }
 
@@ -16,7 +15,7 @@ impl<'a, T> ListIterMut<'a, T> {
     /// iterator.
     pub fn peek_next_mut(&mut self) -> Option<&mut T> {
         self.next_link.as_mut().map(|node| {
-            let Node(ref mut v, _) = **node; v
+            &mut node.value
         })
     }
 
@@ -25,11 +24,8 @@ impl<'a, T> ListIterMut<'a, T> {
     ///
     /// The inserted element does not appear in the iteration.
     pub fn insert_next(&mut self, v: T) {
-        let mut new_node = Box::new(Node(v, self.next_link.take()));
-        let tail_link: *mut _ = {
-            let Node(_, ref mut tail_link) = *new_node;
-            tail_link
-        };
+        let mut new_node = Node::new_boxed(v, self.next_link.take());
+        let tail_link: *mut _ = &mut new_node.next;
         *self.next_link = Some(new_node);
         unsafe {
             self.next_link = &mut *tail_link;
@@ -44,11 +40,11 @@ impl<'a, T> ListIterMut<'a, T> {
     /// of the list.
     pub fn remove_next(&mut self) -> Option<T> {
         self.next_link.take().map(|node| {
-            let Node(v, tail_link) = *{node};
-            *self.next_link = tail_link;
+            let (value, next) = node.take();
+            *self.next_link = next;
             *self.list_len -= 1;
             self.len -= 1;
-            v
+            value
         })
     }
 

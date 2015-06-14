@@ -1,4 +1,4 @@
-use ::{List,Link,Node};
+use ::{List,Link};
 
 mod extra;
 
@@ -27,8 +27,8 @@ impl<'a, T> Iterator for ListIterMut<'a, T> {
         let next_link: *mut _ = self.next_link;
         unsafe {
             if let Some(ref mut node) = *next_link {
-                let Node(ref mut value, ref mut next_link) = **{node};
-                self.next_link = next_link;
+                let (value, next) = node.take_mut();
+                self.next_link = next;
                 self.len -= 1;
                 Some(value)
             } else {
