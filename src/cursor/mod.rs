@@ -137,8 +137,6 @@ impl<'a, T> Cursor<'a, T> {
 
     // O(min(at, self.len))
     pub fn split(&mut self, after: usize) -> List<T> {
-        // TODO checkpoint is broken. because it does not update
-        // the parent cursor.len...
         let mut c = self.checkpoint();
         c.nth(after);
         c.truncate()
@@ -146,9 +144,9 @@ impl<'a, T> Cursor<'a, T> {
 
     // O(min(count, self.len))
     pub fn remove_n(&mut self, count: usize) -> List<T> {
-        let mut tail = self.split(count);
+        let tail = self.split(count);
         let removed = self.truncate();
-        self.splice(&mut tail);
+        self.assign_tail(&mut {tail});
         removed
     }
 }
@@ -549,7 +547,7 @@ fn splice() {
 }
 
 #[test]
-fn splut() {
+fn split() {
     let mut a = ::list(0..20);
     let b;
     {
@@ -568,14 +566,22 @@ fn splut() {
 }
 
 
-//#[test]
-//fn remove_n() {
-    //let mut l = ::list(0..10);
-    //{
-        //let mut c = l.cursor();
-        //assert!(c.next());
-    //}
-//}
+#[test]
+fn remove_n() {
+    let mut l = ::list(0..10);
+    {
+        let mut c = l.cursor();
+        assert_eq!(c.position(), 0);
+        assert_eq!(c.len(), 10);
+        c.nth(3);
+        assert_eq!(c.position(), 3);
+        assert_eq!(c.len(), 7);
+        assert_eq!(c.remove_n(4), ::list(3..7));
+        assert_eq!(c.position(), 3);
+        assert_eq!(c.len(), 3);
+    }
+    assert_eq!(l, ::list([0, 1, 2, 7, 8, 9].iter().cloned()));
+}
 
 
 //#[test]
