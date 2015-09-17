@@ -151,6 +151,7 @@ impl<'a, T> Cursor<'a, T> {
     }
 }
 
+// TODO cursor iter?
 pub struct CursorIntoIter<'a, T: 'a> {
     cursor: Cursor<'a, T>,
     first: bool,
@@ -584,67 +585,93 @@ fn remove_n() {
 }
 
 
-//#[test]
-//fn merge_sort() {
-    //let mut l = ::list((0..10).rev());
+fn collect_cursor<'a, T: Clone>(mut c: Cursor<'a, T>) -> Vec<T> {
+    let mut r = Vec::new();
+    loop {
+        if let Some(value) = c.value() {
+            r.push(value.clone());
+        } else {
+            break;
+        }
+        c.next();
+    }
+    r
+}
 
-    //let mut k = 1;
-    //loop {
-        //println!("-**- {:?} ({:?})", l, k);
-        //let mut tail = l;
-        //let mut merge_counts = 0;
-        //{
-            //l = List::new();
-            ////let mut cl = l.cursor();
+#[test]
+fn merge_sort() {
+    use std::fmt::Debug;
 
-            //let mut a;
-            //let mut b;
-            //while !tail.is_empty() {
-                //a = tail;
-                //b = a.split_off(k);
-                //tail = b.split_off(k);
+    fn merge<'c, T>(mut a: List<T>, mut b: List<T>)
+        -> (List<T>, usize)
+        where T: Ord + Clone + Debug {
 
-                //let mut ca = a.cursor();
-                //let mut cb = b.cursor();
+        use std::cmp::Ordering::*;
 
-                //loop {
-                    //let a_smaller;
-                    //if let (Some(va), Some(vb)) = (ca.value(), cb.value()) {
-                        //println!("{:?} - {:?}", va, vb);
-                        //a_smaller = va <= vb;
-                    //} else {
-                        //println!("--");
-                        //break;
-                    //}
-                    //if a_smaller {
-                        ////cl.insert_all(ca.remove_n(1));
-                        //l.append(&mut ca.remove_n(1));
-                        //ca.next();
-                    //} else {
-                        //l.append(&mut cb.remove_n(1));
-                        //cb.next();
-                    //}
-                //}
-                ////cl.insert_all(ca.truncate());
-                ////cl.insert_all(cb.truncate());
-                //l.append(&mut ca.truncate());
-                //l.append(&mut cb.truncate());
+        let mut merge_counts = 0;
+        let mut r = List::new();
+        {
+            let mut ca = a.cursor();
+            let mut cb = b.cursor();
+            let mut co = r.cursor();
+            loop {
+                let cmpr = {
+                    if let (Some(a), Some(b)) = (ca.value(), cb.value()) {
+                        a.cmp(b)
+                    } else {
+                        break
+                    }
+                };
+                println!("-- {:?} cmp {:?} -> {:?}",
+                         collect_cursor(ca.checkpoint()),
+                         collect_cursor(cb.checkpoint()),
+                         cmpr
+                        );
+                if cmpr == Less {
+                    co.splice(&mut ca.remove_n(1));
+                } else {
+                    co.splice(&mut cb.remove_n(1));
+                }
+                merge_counts += 1;
+            }
+            co.splice(&mut ca.truncate());
+            co.splice(&mut cb.truncate());
+        }
+        (r, merge_counts)
+    }
 
-                //merge_counts += 1;
-                //println!("----- {:?}", merge_counts);
-            //}
+    const LMAX: usize = 100;
+    let mut l = ::list((LMAX/2..LMAX).rev());
+    l.extend(::list(0..LMAX/2));
 
-        //}
-        //println!("-+++++++++- {:?} {:?} {:?}", merge_counts, l, l.len());
-        //if merge_counts <= 1 {
-            //break;
-        //}
+    let mut split_size = 1;
+    loop {
+        println!("-> {:?} (split_size: {:?})", l, split_size);
+        let mut tail = l;
+        let mut total_merge_count = 0;
+        {
+            l = List::new();
+            let mut cl = l.cursor();
 
-        //k *= 2;
-    //}
+            while !tail.is_empty() {
+                let mut a = tail;
+                let mut b = a.cursor().split(split_size);
+                tail = b.cursor().split(split_size);
 
-    //println!("---> {:?}", l);
-    //for (i, v) in l.iter().enumerate() {
-        //assert_eq!(i, *v);
-    //}
-//}
+                let (merged, merge_count) = merge(a, b);
+                cl.splice(&mut {merged});
+                total_merge_count += merge_count;
+            }
+
+        }
+
+        if total_merge_count <= 1 {
+            break;
+        }
+
+        split_size *= 2;
+    }
+
+    println!("== {:?}", l);
+    assert_eq!(l, ::list(0..LMAX));
+}
