@@ -1,17 +1,16 @@
 use std::mem;
-use std::fmt;
 use ::{List,Link,Node};
 
 pub struct Cursor<'a, T: 'a> {
     next_link: &'a mut Link<T>,
     list_len: &'a mut usize,
-    len: usize,
+    position: usize,
 }
 
 impl<T> List<T> {
     pub fn cursor(&mut self) -> Cursor<T> {
         Cursor{
-            len: self.len,
+            position: 0,
             list_len: &mut self.len,
             next_link: &mut self.head,
         }
@@ -36,25 +35,25 @@ impl<'a, T> Cursor<'a, T> {
         unsafe {
             if let Some(ref mut node) = *next_link {
                 self.next_link = &mut node.next;
-                self.len -= 1;
+                self.position += 1;
             }
         }
         self.next_link.is_some()
     }
 
-    pub fn len(&self) -> usize { self.len }
-
-    pub fn position(&self) -> usize {
+    pub fn len(&self) -> usize {
         if cfg!(test) {
-            self.list_len.checked_sub(self.len).expect("position underflow")
+            self.list_len.checked_sub(self.position).expect("len underflow")
         } else {
-            *self.list_len - self.len
+            *self.list_len - self.position
         }
     }
 
+    pub fn position(&self) -> usize { self.position }
+
     pub fn checkpoint(&mut self) -> Cursor<T> {
         Cursor{
-            len: self.len,
+            position: self.position,
             list_len: self.list_len,
             next_link: self.next_link,
         }
@@ -73,7 +72,7 @@ impl<'a, T> Cursor<'a, T> {
 
     // O(self.len - 1)
     pub fn last(&mut self) -> usize {
-        match self.len.checked_sub(1) {
+        match self.len().checked_sub(1) {
             Some(nth) => self.nth(nth),
             None => 0,
         }
@@ -81,8 +80,8 @@ impl<'a, T> Cursor<'a, T> {
 
     // O(self.len)
     pub fn end(&mut self) -> usize {
-        let len = self.len;
-        self.nth(len)
+        let nth = self.len();
+        self.nth(nth)
     }
 
     // O(1)
@@ -92,6 +91,7 @@ impl<'a, T> Cursor<'a, T> {
         let next: *mut _ = &mut new_node.next;
         *self.next_link = Some(new_node);
         *self.list_len += 1;
+        self.position += 1;
         unsafe {
             self.next_link = &mut *next;
             &mut *value
@@ -103,7 +103,6 @@ impl<'a, T> Cursor<'a, T> {
         self.next_link.take().map(|mut node| {
             *self.next_link = node.next.take();
             *self.list_len -= 1;
-            self.len -= 1;
             node.value
         })
     }
@@ -111,29 +110,29 @@ impl<'a, T> Cursor<'a, T> {
     // O(1)
     pub fn truncate(&mut self) -> List<T> {
         let tail_link = self.next_link.take();
-        *self.list_len -= self.len;
+        let tail_len = self.len();
+        *self.list_len -= tail_len;
         List {
-            len: mem::replace(&mut self.len, 0),
+            len: tail_len,
             head: tail_link,
         }
+    }
+
+    fn assign_tail(&mut self, tail: &mut List<T>) {
+        if cfg!(test) {
+            assert!(self.next_link.is_none());
+        }
+        *self.next_link = tail.head.take();
+        *self.list_len += mem::replace(&mut tail.len, 0);
     }
 
     // O(other.len()) if self.len > 0
     // O(1) if self.len == 0
     pub fn splice(&mut self, other: &mut List<T>) {
-        let mut other = mem::replace(other, List::new());
-        if self.len() > 0 {
-            let mut tail = self.truncate();
-
-            let mut c = other.cursor();
-            c.end();
-            *c.next_link = tail.head.take();
-            c.len = mem::replace(&mut tail.len, 0);
-            *c.list_len += c.len;
-        }
-        *self.next_link = other.head.take();
-        *self.list_len += other.len;
-        self.len += mem::replace(&mut other.len, 0);
+        let tail = self.truncate();
+        self.assign_tail(other);
+        self.end();
+        self.assign_tail(&mut {tail});
     }
 
     // O(min(at, self.len))
@@ -187,7 +186,7 @@ impl<'a, T> Iterator for CursorIntoIter<'a, T> {
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let len = self.cursor.len;
+        let len = self.cursor.len();
         (len, Some(len))
     }
 }
@@ -232,7 +231,7 @@ impl<'c, 'l, T> Iterator for CursorIterMut<'c, 'l, T> {
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let len = self.cursor.len;
+        let len = self.cursor.len();
         (len, Some(len))
     }
 }
@@ -253,12 +252,12 @@ fn next() {
     let mut l = ::list(0..10);
     let mut i = 0;
     for mut c in l.cursor() {
-        assert_eq!(c.len, 10-i);
+        assert_eq!(c.len(), 10-i);
         assert_eq!(c.value(), Some(&i));
         assert_eq!(c.value_mut(), Some(&mut i));
         assert_eq!(c.next(), true);
         i += 1;
-        assert_eq!(c.len, 10-i);
+        assert_eq!(c.len(), 10-i);
         assert_eq!(c.value(), Some(&i));
         assert_eq!(c.value_mut(), Some(&mut i));
         i += 1;
@@ -273,9 +272,9 @@ fn checkpoint() {
     for mut c in l.cursor() {
         assert_eq!(c.value(), Some(&i));
         {
-            let mut c2 = c.checkpoint();
+            let c2 = c.checkpoint();
             let mut j = i;
-            for mut c2 in c2 {
+            for c2 in c2 {
                 assert_eq!(c2.value(), Some(&j));
                 j += 1;
             }
@@ -427,9 +426,9 @@ fn append() {
         for i in 0..15 {
             c.insert(i);
         }
-        assert_eq!(c.len, 0);
+        assert_eq!(c.len(), 0);
     }
-    assert_eq!(l.len, 15);
+    assert_eq!(l.len(), 15);
     assert_eq!(l, ::list(0..15));
 }
 
@@ -509,8 +508,8 @@ fn splice() {
         assert_eq!(c.len(), 2);
         assert_eq!(c.position(), 3);
         c.splice(&mut b);
-        assert_eq!(c.len(), 2+5);
-        assert_eq!(c.position(), 3);
+        assert_eq!(c.len(), 2);
+        assert_eq!(c.position(), 3+5);
     }
     assert_eq!(a.len(), 10);
     assert_eq!(a, ::list(
@@ -521,8 +520,8 @@ fn splice() {
         assert_eq!(c.len(), 0);
         assert_eq!(c.position(), 0);
         c.splice(&mut ::list(10..15));
-        assert_eq!(c.len(), 5);
-        assert_eq!(c.position(), 0);
+        assert_eq!(c.len(), 0);
+        assert_eq!(c.position(), 5);
     }
     assert_eq!(b.len(), 5);
     assert_eq!(b, ::list(10..15));
@@ -531,8 +530,8 @@ fn splice() {
         assert_eq!(c.len(), 5);
         assert_eq!(c.position(), 0);
         c.splice(&mut ::list(5..10));
-        assert_eq!(c.len(), 10);
-        assert_eq!(c.position(), 0);
+        assert_eq!(c.len(), 5);
+        assert_eq!(c.position(), 5);
     }
     assert_eq!(b.len(), 10);
     assert_eq!(b, ::list(5..15));
@@ -542,8 +541,8 @@ fn splice() {
         assert_eq!(c.position(), 0);
         c.end();
         c.splice(&mut ::list(15..20));
-        assert_eq!(c.len(), 5);
-        assert_eq!(c.position(), 10);
+        assert_eq!(c.len(), 0);
+        assert_eq!(c.position(), 15);
     }
     assert_eq!(b.len(), 15);
     assert_eq!(b, ::list(5..20));
@@ -552,7 +551,7 @@ fn splice() {
 #[test]
 fn splut() {
     let mut a = ::list(0..20);
-    let mut b;
+    let b;
     {
         let mut c = a.cursor();
         assert_eq!(c.len(), 20);

@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 use std::cmp::Ordering::*;
-use {List, Node};
+use ::List;
 
 impl<A: PartialEq> PartialEq for List<A> {
     fn eq(&self, other: &List<A>) -> bool {
