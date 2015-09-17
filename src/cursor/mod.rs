@@ -584,31 +584,27 @@ fn remove_n() {
     assert_eq!(l, ::list([0, 1, 2, 7, 8, 9].iter().cloned()));
 }
 
-
-fn collect_cursor<'a, T: Clone>(mut c: Cursor<'a, T>) -> Vec<T> {
-    let mut r = Vec::new();
-    loop {
-        if let Some(value) = c.value() {
-            r.push(value.clone());
-        } else {
-            break;
-        }
-        c.next();
-    }
-    r
-}
+//fn collect_cursor<'a, T: Clone>(mut c: Cursor<'a, T>) -> Vec<T> {
+    //let mut r = Vec::new();
+    //loop {
+        //if let Some(value) = c.value() {
+            //r.push(value.clone());
+        //} else {
+            //break;
+        //}
+        //c.next();
+    //}
+    //r
+//}
 
 #[test]
 fn merge_sort() {
     use std::fmt::Debug;
 
     fn merge<'c, T>(mut a: List<T>, mut b: List<T>)
-        -> (List<T>, usize)
-        where T: Ord + Clone + Debug {
-
+        -> List<T> where T: Ord + Clone + Debug {
         use std::cmp::Ordering::*;
 
-        let mut merge_counts = 0;
         let mut r = List::new();
         {
             let mut ca = a.cursor();
@@ -622,56 +618,39 @@ fn merge_sort() {
                         break
                     }
                 };
-                println!("-- {:?} cmp {:?} -> {:?}",
-                         collect_cursor(ca.checkpoint()),
-                         collect_cursor(cb.checkpoint()),
-                         cmpr
-                        );
                 if cmpr == Less {
                     co.splice(&mut ca.remove_n(1));
                 } else {
                     co.splice(&mut cb.remove_n(1));
                 }
-                merge_counts += 1;
             }
             co.splice(&mut ca.truncate());
             co.splice(&mut cb.truncate());
         }
-        (r, merge_counts)
+        r
     }
 
     const LMAX: usize = 100;
     let mut l = ::list((LMAX/2..LMAX).rev());
     l.extend(::list(0..LMAX/2));
 
-    let mut split_size = 1;
-    loop {
-        println!("-> {:?} (split_size: {:?})", l, split_size);
+    let mut run_len = 1;
+    while run_len < l.len() {
         let mut tail = l;
-        let mut total_merge_count = 0;
         {
             l = List::new();
             let mut cl = l.cursor();
 
             while !tail.is_empty() {
                 let mut a = tail;
-                let mut b = a.cursor().split(split_size);
-                tail = b.cursor().split(split_size);
-
-                let (merged, merge_count) = merge(a, b);
-                cl.splice(&mut {merged});
-                total_merge_count += merge_count;
+                let mut b = a.cursor().split(run_len);
+                tail = b.cursor().split(run_len);
+                cl.splice(&mut merge(a,b));
             }
 
         }
-
-        if total_merge_count <= 1 {
-            break;
-        }
-
-        split_size *= 2;
+        run_len *= 2;
     }
 
-    println!("== {:?}", l);
     assert_eq!(l, ::list(0..LMAX));
 }
