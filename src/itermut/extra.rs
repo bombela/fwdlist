@@ -67,7 +67,7 @@ impl<'a, T> ListIterMut<'a, T> {
 
 #[test]
 fn mutref_iter_advanced() {
-    let mut l = (0..10).collect::<List<_>>();
+    let mut l = ::list(0..10);
     assert_eq!(l.len(), 10);
     {
         let mut iter = l.iter_mut();

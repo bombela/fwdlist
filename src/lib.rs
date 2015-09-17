@@ -32,6 +32,7 @@ mod ops;
 mod intoiter;
 mod iter;
 mod itermut;
+mod cursor;
 
 /// A simply linked list.
 pub struct List<T> {
@@ -41,6 +42,7 @@ pub struct List<T> {
 
 type Link<T> = Option<Box<Node<T>>>;
 
+#[derive(Debug)]
 struct Node<T> {
     value: T,
     next: Link<T>,
@@ -61,4 +63,9 @@ impl<T> Node<T> {
     fn take_mut(&mut self) -> (&mut T, &mut Link<T>) {
         (&mut self.value, &mut self.next)
     }
+}
+
+#[cfg(test)]
+fn list<I: Iterator>(i: I) -> List<I::Item> {
+    i.collect::<List<_>>()
 }
