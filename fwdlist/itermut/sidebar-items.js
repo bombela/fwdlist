@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["ListIterMut","Mutable iterator over a list."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["ListIter","Read-only iterator over a list."]]});

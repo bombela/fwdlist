@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Cursor` struct in crate `fwdlist`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Cursor">
+
+    <title>fwdlist::Cursor - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>fwdlist</a></p><script>window.sidebarCurrent = {name: 'Cursor', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>fwdlist</a>::<wbr><a class='struct' href=''>Cursor</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-475' class='srclink' href='../src/fwdlist/lib.rs.html#158-162' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Cursor&lt;'a, T: 'a&gt; {
+    // some fields omitted
+}</pre><div class='docblock'><p>A cursor to navigate the list and reshape it.</p>
+
+<p>Conceptually, a cursor moves between nodes, think the cursor of your text
+editor.</p>
+
+<h2 id='cursor-by-example' class='section-header'><a href='#cursor-by-example'>Cursor by example</a></h2><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>fwdlist</span>::<span class='ident'>List</span>;
+
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>q</span>: <span class='ident'>List</span><span class='op'>&lt;</span>_<span class='op'>&gt;</span> <span class='op'>=</span> (<span class='number'>0</span>..<span class='number'>5</span>).<span class='ident'>collect</span>();
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>c</span> <span class='op'>=</span> <span class='ident'>q</span>.<span class='ident'>cursor</span>();</pre>
+
+<p>So given the list <code>[0,1,2,3,4]</code>, the cursor <code>c</code>, represented by <code>|</code>
+initially points to the first node:</p>
+
+<pre><code class="language-plain"> |0 1 2 3 4
+</code></pre>
+
+<p>After advancing the cursor once <code>c.next()</code>:</p>
+
+<pre><code class="language-plain">  0|1 2 3 4
+</code></pre>
+
+<p>And after Advancing the cursor 4 times <code>c.nth(4)</code>:</p>
+
+<pre><code class="language-plain">  0 1 2 3 4|
+</code></pre>
+
+<h1 id='modifying-the-structure-of-the-list' class='section-header'><a href='#modifying-the-structure-of-the-list'>Modifying the structure of the list</a></h1>
+<p>A cursor let you modify the list after its position (the <code>tail</code>). A cursor
+is really an abstraction of a mutable pointer to the next node of the list.</p>
+
+<p>With a cursor, you can truncate the list, insert and removes nodes, etc.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;'a, T&gt; <a class='struct' href='../fwdlist/struct.Cursor.html' title='fwdlist::Cursor'>Cursor</a>&lt;'a, T&gt;</code></h3><div class='impl-items'><h4 id='method.value' class='method'><code>fn <a href='#method.value' class='fnname'>value</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;T&gt;</code></h4>
+<div class='docblock'><p>A read-only reference to the following node&#39;s value.
+Return <code>None</code> if the cursor is past the end of the list.</p>
+</div><h4 id='method.value_mut' class='method'><code>fn <a href='#method.value_mut' class='fnname'>value_mut</a>(&amp;mut self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;mut T&gt;</code></h4>
+<div class='docblock'><p>A mutable reference to the following node&#39;s value.
+Return <code>None</code> if the cursor is past the end of the list.</p>
+</div><h4 id='method.next' class='method'><code>fn <a href='#method.next' class='fnname'>next</a>(&amp;mut self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Move the cursor past the following node. Returns <code>true</code> on success,
+<code>false</code> if the cursor is already at the end of the list.</p>
+</div><h4 id='method.len' class='method'><code>fn <a href='#method.len' class='fnname'>len</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<div class='docblock'><p>The lengths of the tail.</p>
+</div><h4 id='method.position' class='method'><code>fn <a href='#method.position' class='fnname'>position</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<div class='docblock'><p>The position from the beginning of the list.</p>
+</div><h4 id='method.checkpoint' class='method'><code>fn <a href='#method.checkpoint' class='fnname'>checkpoint</a>(&amp;mut self) -&gt; <a class='struct' href='../fwdlist/struct.Cursor.html' title='fwdlist::Cursor'>Cursor</a>&lt;T&gt;</code></h4>
+<div class='docblock'><p>Returns a copy of the cursor, freezing <code>self</code> while the copy is alive.</p>
+</div><h4 id='method.nth' class='method'><code>fn <a href='#method.nth' class='fnname'>nth</a>(&amp;mut self, nth: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<div class='docblock'><p>Move forward by <code>nth</code> nodes in O(min(nth, self.len)).
+Returns the number of nodes skipped, which could be less than <code>nth</code> if
+there is not enough remaining nodes.</p>
+</div><h4 id='method.last' class='method'><code>fn <a href='#method.last' class='fnname'>last</a>(&amp;mut self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<div class='docblock'><p>Move forward before the last node of the list in O(self.len - 1).
+Returns the number of nodes skipped, which could be less than <code>nth</code> if
+there is not enough remaining nodes.</p>
+</div><h4 id='method.end' class='method'><code>fn <a href='#method.end' class='fnname'>end</a>(&amp;mut self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<div class='docblock'><p>Move the cursor forward after the end of the list in O(self.len).</p>
+</div><h4 id='method.insert' class='method'><code>fn <a href='#method.insert' class='fnname'>insert</a>(&amp;mut self, v: T) -&gt; &amp;mut T</code></h4>
+<div class='docblock'><p>Create a new node containing the value <code>v</code> and insert it at the current
+location in O(1).</p>
+</div><h4 id='method.remove' class='method'><code>fn <a href='#method.remove' class='fnname'>remove</a>(&amp;mut self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;T&gt;</code></h4>
+<div class='docblock'><p>Remove the following node and return the contained value in O(1).
+Return <code>None</code> if the cursor is past the end of the list.</p>
+</div><h4 id='method.truncate' class='method'><code>fn <a href='#method.truncate' class='fnname'>truncate</a>(&amp;mut self) -&gt; <a class='struct' href='../fwdlist/struct.List.html' title='fwdlist::List'>List</a>&lt;T&gt;</code></h4>
+<div class='docblock'><p>Truncate the list after the cursor, returning the tail in O(1).</p>
+</div><h4 id='method.splice' class='method'><code>fn <a href='#method.splice' class='fnname'>splice</a>(&amp;mut self, other: &amp;mut <a class='struct' href='../fwdlist/struct.List.html' title='fwdlist::List'>List</a>&lt;T&gt;)</code></h4>
+<div class='docblock'><p>Insert the list <code>other</code> after the cursor.</p>
+
+<ul>
+<li>In O(other.len()) if self.len &gt; 0</li>
+<li>O(1) if self.len == 0</li>
+</ul>
+</div><h4 id='method.split' class='method'><code>fn <a href='#method.split' class='fnname'>split</a>(&amp;mut self, after: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../fwdlist/struct.List.html' title='fwdlist::List'>List</a>&lt;T&gt;</code></h4>
+<div class='docblock'><p>Split the list after <code>nth</code> and return the tail in O(min(at, self.len)).
+This is the same as:</p>
+<pre class='rust rust-example-rendered'>
+{
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>c</span> <span class='op'>=</span> <span class='ident'>c</span>.<span class='ident'>checkpoint</span>();
+    <span class='ident'>c</span>.<span class='ident'>nth</span>(<span class='ident'>after</span>);
+    <span class='ident'>c</span>.<span class='ident'>truncate</span>()
+}</pre>
+</div><h4 id='method.remove_n' class='method'><code>fn <a href='#method.remove_n' class='fnname'>remove_n</a>(&amp;mut self, count: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../fwdlist/struct.List.html' title='fwdlist::List'>List</a>&lt;T&gt;</code></h4>
+<div class='docblock'><p>Remove <code>count</code> nodes after the cursor in O(min(count, self.len)).
+Return the removed list.</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl&lt;'a, T&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/trait.IntoIterator.html' title='core::iter::IntoIterator'>IntoIterator</a> for <a class='struct' href='../fwdlist/struct.Cursor.html' title='fwdlist::Cursor'>Cursor</a>&lt;'a, T&gt;</code></h3><div class='impl-items'><h4 id='associatedtype.Item' class='type'><code>type Item = &amp;'a mut <a class='struct' href='../fwdlist/struct.Cursor.html' title='fwdlist::Cursor'>Cursor</a>&lt;'a, T&gt;</code></h4>
+<h4 id='associatedtype.IntoIter' class='type'><code>type IntoIter = CursorIntoIter&lt;'a, T&gt;</code></h4>
+<h4 id='method.into_iter' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/iter/trait.IntoIterator.html#method.into_iter' class='fnname'>into_iter</a>(self) -&gt; Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/trait.IntoIterator.html' title='core::iter::IntoIterator'>IntoIter</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'c, 'l, T&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/trait.IntoIterator.html' title='core::iter::IntoIterator'>IntoIterator</a> for &amp;'c mut <a class='struct' href='../fwdlist/struct.Cursor.html' title='fwdlist::Cursor'>Cursor</a>&lt;'l, T&gt;</code></h3><div class='impl-items'><h4 id='associatedtype.Item-1' class='type'><code>type Item = &amp;'c mut <a class='struct' href='../fwdlist/struct.Cursor.html' title='fwdlist::Cursor'>Cursor</a>&lt;'l, T&gt;</code></h4>
+<h4 id='associatedtype.IntoIter-1' class='type'><code>type IntoIter = CursorIterMut&lt;'c, 'l, T&gt;</code></h4>
+<h4 id='method.into_iter-1' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/iter/trait.IntoIterator.html#method.into_iter' class='fnname'>into_iter</a>(self) -&gt; Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/trait.IntoIterator.html' title='core::iter::IntoIterator'>IntoIter</a></code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "fwdlist";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `fwdlist` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, fwdlist">
+
+    <title>fwdlist - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'fwdlist', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>fwdlist</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-0' class='srclink' href='../src/fwdlist/lib.rs.html#1-187' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>A simple forward linked list.</p>
+
+<p>It&#39;s a linked list. Its not cache friendly, its relatively slow when you
+think about it, but it allows for O(1) insertion... after the current
+cursor location, maybe you care about that.</p>
+
+<h1 id='trivial-example' class='section-header'><a href='#trivial-example'>Trivial example</a></h1><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>fwdlist</span>::<span class='ident'>List</span>;
+
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>q</span> <span class='op'>=</span> <span class='ident'>List</span>::<span class='ident'>new</span>();
+<span class='ident'>q</span>.<span class='ident'>push_back</span>(<span class='number'>2</span>);
+<span class='ident'>q</span>.<span class='ident'>push_front</span>(<span class='number'>1</span>);
+<span class='ident'>q</span>.<span class='ident'>push_back</span>(<span class='number'>3</span>);
+
+<span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;{:?}&quot;</span>, <span class='ident'>q</span>);
+<span class='kw'>for</span> <span class='ident'>v</span> <span class='kw'>in</span> <span class='ident'>q</span> {
+    <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;{:?}&quot;</span>, <span class='ident'>v</span>);
+}</pre>
+
+<h1 id='using-cursors' class='section-header'><a href='#using-cursors'>Using cursors</a></h1>
+<p>A cursor helps walking the list while modifying its structure. Not to be
+confused with a mutable iterator, which merely provides mutable access to
+values of the list.</p>
+
+<p>For example, using cursors, we can implement a non-recursive merge-sort by
+sorting and merging the list by pair of 2, 4, 8, etc...</p>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>fwdlist</span>;
+
+<span class='kw'>use</span> <span class='ident'>fwdlist</span>::<span class='ident'>List</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>::<span class='ident'>Debug</span>;
+
+<span class='kw'>fn</span> <span class='ident'>mklist</span><span class='op'>&lt;</span><span class='ident'>I</span>: <span class='ident'>Iterator</span><span class='op'>&gt;</span>(<span class='ident'>i</span>: <span class='ident'>I</span>) <span class='op'>-&gt;</span> <span class='ident'>List</span><span class='op'>&lt;</span><span class='ident'>I</span>::<span class='ident'>Item</span><span class='op'>&gt;</span> {
+    <span class='ident'>i</span>.<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>List</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>()
+}
+
+<span class='kw'>fn</span> <span class='ident'>merge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;c</span>, <span class='ident'>T</span><span class='op'>&gt;</span>(<span class='kw-2'>mut</span> <span class='ident'>a</span>: <span class='ident'>List</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>, <span class='kw-2'>mut</span> <span class='ident'>b</span>: <span class='ident'>List</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>)
+    <span class='op'>-&gt;</span> <span class='ident'>List</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Ord</span> <span class='op'>+</span> <span class='ident'>Debug</span> {
+    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>::<span class='ident'>Ordering</span>::<span class='op'>*</span>;
+
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>r</span> <span class='op'>=</span> <span class='ident'>List</span>::<span class='ident'>new</span>();
+    {
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>a</span> <span class='op'>=</span> <span class='ident'>a</span>.<span class='ident'>cursor</span>();
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>b</span>.<span class='ident'>cursor</span>();
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>o</span> <span class='op'>=</span> <span class='ident'>r</span>.<span class='ident'>cursor</span>();
+        <span class='kw'>loop</span> {
+            <span class='kw'>let</span> <span class='ident'>cmpr</span> <span class='op'>=</span> {
+                <span class='kw'>if</span> <span class='kw'>let</span> (<span class='prelude-val'>Some</span>(<span class='ident'>a</span>), <span class='prelude-val'>Some</span>(<span class='ident'>b</span>)) <span class='op'>=</span> (<span class='ident'>a</span>.<span class='ident'>value</span>(), <span class='ident'>b</span>.<span class='ident'>value</span>()) {
+                    <span class='ident'>a</span>.<span class='ident'>cmp</span>(<span class='ident'>b</span>)
+                } <span class='kw'>else</span> {
+                    <span class='kw'>break</span>
+                }
+            };
+            <span class='kw'>if</span> <span class='ident'>cmpr</span> <span class='op'>==</span> <span class='ident'>Less</span> {
+                <span class='ident'>o</span>.<span class='ident'>splice</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>a</span>.<span class='ident'>remove_n</span>(<span class='number'>1</span>));
+            } <span class='kw'>else</span> {
+                <span class='ident'>o</span>.<span class='ident'>splice</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>b</span>.<span class='ident'>remove_n</span>(<span class='number'>1</span>));
+            }
+        }
+        <span class='ident'>o</span>.<span class='ident'>splice</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>a</span>.<span class='ident'>truncate</span>());
+        <span class='ident'>o</span>.<span class='ident'>splice</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>b</span>.<span class='ident'>truncate</span>());
+    }
+    <span class='ident'>r</span>
+}
+
+<span class='kw'>fn</span> <span class='ident'>merge_sort</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>(<span class='kw-2'>mut</span> <span class='ident'>l</span>: <span class='ident'>List</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>List</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Ord</span> <span class='op'>+</span> <span class='ident'>Debug</span> {
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>run_len</span> <span class='op'>=</span> <span class='number'>1</span>;
+    <span class='kw'>let</span> <span class='ident'>max_run_len</span> <span class='op'>=</span> <span class='ident'>l</span>.<span class='ident'>len</span>();
+    <span class='kw'>while</span> <span class='ident'>run_len</span> <span class='op'>&lt;</span> <span class='ident'>max_run_len</span> {
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tail</span> <span class='op'>=</span> <span class='ident'>l</span>;
+        <span class='ident'>l</span> <span class='op'>=</span> <span class='ident'>List</span>::<span class='ident'>new</span>();
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>cl</span> <span class='op'>=</span> <span class='ident'>l</span>.<span class='ident'>cursor</span>();
+
+        <span class='kw'>while</span> <span class='op'>!</span><span class='ident'>tail</span>.<span class='ident'>is_empty</span>() {
+            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>a</span> <span class='op'>=</span> <span class='ident'>tail</span>;
+            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>a</span>.<span class='ident'>cursor</span>().<span class='ident'>split</span>(<span class='ident'>run_len</span>);
+            <span class='ident'>tail</span> <span class='op'>=</span> <span class='ident'>b</span>.<span class='ident'>cursor</span>().<span class='ident'>split</span>(<span class='ident'>run_len</span>);
+            <span class='ident'>cl</span>.<span class='ident'>splice</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>merge</span>(<span class='ident'>a</span>,<span class='ident'>b</span>));
+        }
+        <span class='ident'>run_len</span> <span class='op'>*=</span> <span class='number'>2</span>;
+    }
+    <span class='kw'>return</span> <span class='ident'>l</span>;
+}
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>const</span> <span class='ident'>LMAX</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='number'>30</span>;
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>l</span> <span class='op'>=</span> <span class='ident'>mklist</span>((<span class='ident'>LMAX</span><span class='op'>/</span><span class='number'>2</span>..<span class='ident'>LMAX</span>).<span class='ident'>rev</span>());
+    <span class='ident'>l</span>.<span class='ident'>extend</span>(<span class='ident'>mklist</span>(<span class='number'>0</span>..<span class='ident'>LMAX</span><span class='op'>/</span><span class='number'>2</span>));
+    <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;-&gt; {:?}&quot;</span>, <span class='ident'>l</span>);
+    <span class='kw'>let</span> <span class='ident'>l</span> <span class='op'>=</span> <span class='ident'>merge_sort</span>(<span class='ident'>l</span>);
+    <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;-&gt; {:?}&quot;</span>, <span class='ident'>l</span>);
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>l</span>, <span class='ident'>mklist</span>(<span class='number'>0</span>..<span class='ident'>LMAX</span>));
+}</pre>
+
+<p>Happy hacking!</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Cursor.html'
+                               title='fwdlist::Cursor'>Cursor</a></td>
+                        <td class='docblock short'>
+                             <p>A cursor to navigate the list and reshape it.</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.List.html'
+                               title='fwdlist::List'>List</a></td>
+                        <td class='docblock short'>
+                             <p>A simply linked list.</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.ListIntoIter.html'
+                               title='fwdlist::ListIntoIter'>ListIntoIter</a></td>
+                        <td class='docblock short'>
+                             <p>Iterator consuming a list.</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.ListIter.html'
+                               title='fwdlist::ListIter'>ListIter</a></td>
+                        <td class='docblock short'>
+                             <p>Read-only iterator over a list.</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.ListIterMut.html'
+                               title='fwdlist::ListIterMut'>ListIterMut</a></td>
+                        <td class='docblock short'>
+                             <p>Mutable iterator over a list.</p>
+                        </td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "fwdlist";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

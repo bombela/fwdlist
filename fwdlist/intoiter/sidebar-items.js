@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["ListIntoIter","Iterator consuming a list."]]});
