@@ -2,7 +2,8 @@
 
 [![Build Status](https://travis-ci.org/bombela/fwdlist.svg?branch=master)](https://travis-ci.org/bombela/fwdlist)
 
-A simple forward linked list, [see the API documentation](http://bombela.github.io/fwdlist/fwdlist/index.html).
+A simple forward linked list, [see the API documentation](http://bombela.github.io/fwdlist/fwdlist/index.html.
+The crate is also available on [crates.io](https://crates.io/crates/fwdlist).
 
 It's a linked list. Its not cache friendly, its relatively slow when you think
 about it, but it allows for O(1) insertion... after the current cursor
