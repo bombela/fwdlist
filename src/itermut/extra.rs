@@ -1,5 +1,5 @@
 use std::mem;
-use ::{List,Node};
+use ::{List, Node, Cursor};
 use super::ListIterMut;
 
 /// Extra operations on mutable iterator - **Unstable API**.
@@ -61,6 +61,17 @@ impl<'a, T> ListIterMut<'a, T> {
         List {
             len: mem::replace(&mut self.len, 0),
             head: tail_link,
+        }
+    }
+}
+
+/// Convert the mutable iterator into a cursor **unstable* API*.
+impl<'a, T> Into<Cursor<'a, T>> for ListIterMut<'a, T> {
+    fn into(self) -> Cursor<'a, T> {
+        Cursor{
+            position: *self.list_len - self.len,
+            list_len: self.list_len,
+            next_link: self.next_link,
         }
     }
 }
