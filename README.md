@@ -1,30 +1,30 @@
-#  fwdlist - [documentation reference](http://bombela.github.io/fwdlist/fwdlist/struct.List.html)
+#  fwdlist - A simply linked list in [Rust](https://www.rust-lang.org/).
 
 [![Build Status](https://travis-ci.org/bombela/fwdlist.svg?branch=master)](https://travis-ci.org/bombela/fwdlist)
 
-A simple forward linked list.
+A simple forward linked list, [see the API documentation](http://bombela.github.io/fwdlist/fwdlist/struct.List.html).
 
 It's a linked list. Its not cache friendly, its relatively slow when you think
-about it, but it allows for O(1) insertion... after the current iterator
+about it, but it allows for O(1) insertion... after the current cursor
 location, maybe you care about that.
 
 # Avoiding unsafe
-The goal here is to play with Rust and see how much unsafe is needed. It turns
-out that you can implement everything but the mutable iterator without using
+One of the goal here is to play with Rust and see how much unsafe is needed. It turns
+out that you can implement the basics of a simply linked list without using
 unsafe.
 
-The mutable iterator needs unsafe only because it returns a mutable reference
-with a different lifetime than the mutable reference on the iterator itself. The
-compiler cannot infer that auto-magically and needs a bit of our help.
+The mutable iterator and cursor both need mutable acces to the list with a different lifetime
+than the mutable reference on the list itself.
+The compiler cannot infer that auto-magically and needs a bit of our help.
 
 # penultimate_link() performances
 
-Sometimes the code feels a more convoluted than necessary to please the borrow
-checker.  Some unsafe code would make the code not only easier to read, but also
-*we naively believe*, more efficient for the machine.
+Sometimes the code is more convoluted than necessary to please the borrow
+checker. Some unsafe code would make the code not only easier to read, but also
+*as we might believe naively*, more efficient for the machine.
 
 The best example here is `penultimate_link()`, which returns a mutable reference
-to the last but one link of the list.
+to last but one link of the list.
 
 To illustrate what this function returns, let's assume the following list:
 
@@ -158,9 +158,9 @@ Convoluted safe code vs simpler unsafe code doesn't necessary mean that unsafe
 code is going to be faster. In our specific case `penultimate_with_unsafe()` is
 indeed slower!
 
-This is great because with safe Rust code only, the compiler basically proves
+This is great because with safe Rust code, the compiler basically proves
 for us that there is no possible memory bugs. Any code refactoring cannot
-possibly introduce memory bugs easier, the compiler wouldn't let it pass.
+possibly introduce new memory bugs, the compiler wouldn't let it pass.
 
 
 Happy hacking!
