@@ -5,8 +5,8 @@ mod core;
 mod access;
 mod extra;
 mod stdtraits;
+mod cmp;
 
-/// cna you see see?
 impl<T> List<T> {
     fn last_link(&mut self) -> &mut Link<T> {
         let mut head_link = &mut self.head;

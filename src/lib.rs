@@ -2,7 +2,7 @@
 //!
 //! It's a linked list. Its not cache friendly, its relatively slow when you
 //! think about it, but it allows for O(1) insertion... after the current
-//! iterator location, maybe you care about that.
+//! cursor location, maybe you care about that.
 //!
 //! # Trivial example
 //! ```
@@ -41,6 +41,7 @@ pub struct List<T> {
 
 type Link<T> = Option<Box<Node<T>>>;
 
+#[derive(Debug)]
 struct Node<T> {
     value: T,
     next: Link<T>,
