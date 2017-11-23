@@ -1,4 +1,4 @@
-use ::{List,Link};
+use {Link, List};
 
 mod extra;
 
@@ -12,7 +12,7 @@ pub struct ListIterMut<'a, T: 'a> {
 impl<T> List<T> {
     /// Returns an iterator over the list yielding mutable references.
     pub fn iter_mut(&mut self) -> ListIterMut<T> {
-        ListIterMut{
+        ListIterMut {
             len: self.len,
             list_len: &mut self.len,
             next_link: &mut self.head,

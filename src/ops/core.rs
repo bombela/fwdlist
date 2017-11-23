@@ -1,17 +1,20 @@
-use ::{List, Node};
+use {List, Node};
 
 impl<T> List<T> {
-
     /// A new empty list.
     pub fn new() -> List<T> {
-        List{len: 0, head: None}
+        List { len: 0, head: None }
     }
 
     /// The size of the list in O(1).
-    pub fn len(&self) -> usize { self.len }
+    pub fn len(&self) -> usize {
+        self.len
+    }
 
     /// Returns true if list is empty in O(1);
-    pub fn is_empty(&self) -> bool { self.head.is_none() }
+    pub fn is_empty(&self) -> bool {
+        self.head.is_none()
+    }
 
     /// Push a new element at the front of the list in O(1).
     /// Cannot fails, only panic!/OOM on memory exhaustion.

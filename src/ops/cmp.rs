@@ -1,13 +1,13 @@
 use std::cmp::Ordering;
 use std::cmp::Ordering::*;
-use ::List;
+use List;
 
 impl<A: PartialEq> PartialEq for List<A> {
     fn eq(&self, other: &List<A>) -> bool {
         self.len() == other.len() && {
             for (a, b) in self.iter().zip(other.iter()) {
                 if a != b {
-                    return false
+                    return false;
                 }
             }
             true
@@ -23,8 +23,8 @@ impl<A: PartialOrd> PartialOrd for List<A> {
         loop {
             match (a.next(), b.next()) {
                 (None, None) => return Some(Equal),
-                (None, _   ) => return Some(Less),
-                (_   , None) => return Some(Greater),
+                (None, _) => return Some(Less),
+                (_, None) => return Some(Greater),
                 (Some(x), Some(y)) => match x.partial_cmp(&y) {
                     Some(Equal) => (),
                     non_eq => return non_eq,
@@ -40,8 +40,8 @@ impl<A: Ord> Ord for List<A> {
         loop {
             match (a.next(), b.next()) {
                 (None, None) => return Equal,
-                (None, _   ) => return Less,
-                (_   , None) => return Greater,
+                (None, _) => return Less,
+                (_, None) => return Greater,
                 (Some(x), Some(y)) => match x.cmp(&y) {
                     Equal => (),
                     non_eq => return non_eq,

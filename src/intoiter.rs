@@ -1,9 +1,9 @@
-use ::{List};
+use List;
 
 /// Iterator consuming a list.
 #[derive(Clone)]
 pub struct ListIntoIter<T> {
-    list: List<T>
+    list: List<T>,
 }
 
 impl<T> Iterator for ListIntoIter<T> {
@@ -25,7 +25,7 @@ impl<T> IntoIterator for List<T> {
     type IntoIter = ListIntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        ListIntoIter{list: self}
+        ListIntoIter { list: self }
     }
 }
 

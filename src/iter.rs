@@ -1,4 +1,4 @@
-use ::{List, Link};
+use {Link, List};
 
 /// Read-only iterator over a list.
 // Can't use derive(Clone) here because it will require an extra Clone bound for
@@ -11,7 +11,7 @@ pub struct ListIter<'a, T: 'a> {
 
 impl<'a, T> Clone for ListIter<'a, T> {
     fn clone(&self) -> ListIter<'a, T> {
-        ListIter{
+        ListIter {
             next_link: self.next_link,
             len: self.len,
         }
@@ -21,7 +21,10 @@ impl<'a, T> Clone for ListIter<'a, T> {
 impl<T> List<T> {
     /// Returns an iterator over the list yielding read-only references.
     pub fn iter(&self) -> ListIter<T> {
-        ListIter{next_link: &self.head, len: self.len}
+        ListIter {
+            next_link: &self.head,
+            len: self.len,
+        }
     }
 }
 

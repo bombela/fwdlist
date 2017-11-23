@@ -1,5 +1,5 @@
-use std::{mem};
-use ::{List};
+use std::mem;
+use List;
 
 /// Extra operations on the list - **Unstable API**.
 impl<T> List<T> {
@@ -17,7 +17,9 @@ impl<T> List<T> {
     #[inline(never)]
     pub fn split_off(&mut self, at: usize) -> List<T> {
         assert!(at <= self.len, "Cannot split off at a nonexistent index");
-        if at == self.len { return List::new(); }
+        if at == self.len {
+            return List::new();
+        }
 
         let tail_link;
         let mut head_link = &mut self.head;
@@ -25,16 +27,16 @@ impl<T> List<T> {
         loop {
             if i == at {
                 tail_link = head_link.take();
-                break
+                break;
             }
-            if let Some(ref mut node) = *{head_link} {
+            if let Some(ref mut node) = *{ head_link } {
                 head_link = &mut node.next;
                 i += 1;
             } else {
                 unreachable!();
             }
         }
-        List{
+        List {
             len: mem::replace(&mut self.len, at) - at,
             head: tail_link,
         }
@@ -58,7 +60,9 @@ fn append() {
 #[test]
 fn split_off() {
     let mut a = List::new();
-    for i in 0..20 { a.push_front(i); }
+    for i in 0..20 {
+        a.push_front(i);
+    }
     let b = a.split_off(7);
     assert_eq!(a.len(), 7);
     assert_eq!(b.len(), 13);
@@ -68,15 +72,20 @@ fn split_off() {
     assert_eq!(*b.back().unwrap(), 0);
 
     let mut a = List::new();
-    for i in 0..10 { a.push_front(i); }
+    for i in 0..10 {
+        a.push_front(i);
+    }
     let b = a.split_off(10);
     assert_eq!(a.len(), 10);
     assert_eq!(b.len(), 0);
 }
 
-#[test] #[should_panic]
+#[test]
+#[should_panic]
 fn split_off_panic() {
     let mut a = List::new();
-    for i in 0..10 { a.push_front(i); }
+    for i in 0..10 {
+        a.push_front(i);
+    }
     let _ = a.split_off(11);
 }

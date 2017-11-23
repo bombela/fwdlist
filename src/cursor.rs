@@ -1,10 +1,10 @@
 use std::mem;
-use ::{List, Cursor, Node};
+use {Cursor, List, Node};
 
 impl<T> List<T> {
     /// Return a cursor at the beginning of the list (before the first node).
     pub fn cursor(&mut self) -> Cursor<T> {
-        Cursor{
+        Cursor {
             position: 0,
             list_len: &mut self.len,
             next_link: &mut self.head,
@@ -16,17 +16,13 @@ impl<'a, T> Cursor<'a, T> {
     /// A read-only reference to the following node's value.
     /// Return `None` if the cursor is past the end of the list.
     pub fn value(&self) -> Option<&T> {
-        self.next_link.as_ref().map(|node| {
-            &node.value
-        })
+        self.next_link.as_ref().map(|node| &node.value)
     }
 
     /// A mutable reference to the following node's value.
     /// Return `None` if the cursor is past the end of the list.
     pub fn value_mut(&mut self) -> Option<&mut T> {
-        self.next_link.as_mut().map(|node| {
-            &mut node.value
-        })
+        self.next_link.as_mut().map(|node| &mut node.value)
     }
 
     /// Move the cursor past the following node. Returns `true` on success,
@@ -45,18 +41,22 @@ impl<'a, T> Cursor<'a, T> {
     /// The lengths of the tail.
     pub fn len(&self) -> usize {
         if cfg!(test) {
-            self.list_len.checked_sub(self.position).expect("len underflow")
+            self.list_len
+                .checked_sub(self.position)
+                .expect("len underflow")
         } else {
             *self.list_len - self.position
         }
     }
 
     /// The position from the beginning of the list.
-    pub fn position(&self) -> usize { self.position }
+    pub fn position(&self) -> usize {
+        self.position
+    }
 
     /// Returns a copy of the cursor, freezing `self` while the copy is alive.
     pub fn checkpoint(&mut self) -> Cursor<T> {
-        Cursor{
+        Cursor {
             position: self.position,
             list_len: self.list_len,
             next_link: self.next_link,
@@ -144,7 +144,7 @@ impl<'a, T> Cursor<'a, T> {
         let tail = self.truncate();
         self.assign_tail(other);
         self.end();
-        self.assign_tail(&mut {tail});
+        self.assign_tail(&mut { tail });
     }
 
     /// Split the list after `nth` and return the tail in O(min(at, self.len)).
@@ -168,7 +168,7 @@ impl<'a, T> Cursor<'a, T> {
     pub fn remove_n(&mut self, count: usize) -> List<T> {
         let tail = self.split(count);
         let removed = self.truncate();
-        self.assign_tail(&mut {tail});
+        self.assign_tail(&mut { tail });
         removed
     }
 }
@@ -184,7 +184,7 @@ impl<'a, T> IntoIterator for Cursor<'a, T> {
     type IntoIter = CursorIntoIter<'a, T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        CursorIntoIter{
+        CursorIntoIter {
             cursor: self,
             first: true,
         }
@@ -199,9 +199,7 @@ impl<'a, T> Iterator for CursorIntoIter<'a, T> {
             None
         } else {
             self.first = false;
-            unsafe {
-                Some(mem::transmute(&mut self.cursor))
-            }
+            unsafe { Some(mem::transmute(&mut self.cursor)) }
         }
     }
 
@@ -217,9 +215,8 @@ pub struct CursorIterMut<'c, 'l: 'c, T: 'l> {
 }
 
 impl<'c, 'l, T> Cursor<'l, T> {
-
     fn iter_mut(&'c mut self) -> CursorIterMut<'c, 'l, T> {
-        CursorIterMut{
+        CursorIterMut {
             cursor: self,
             first: true,
         }
@@ -277,12 +274,12 @@ fn next() {
     let mut l = mklist(0..10);
     let mut i = 0;
     for mut c in l.cursor() {
-        assert_eq!(c.len(), 10-i);
+        assert_eq!(c.len(), 10 - i);
         assert_eq!(c.value(), Some(&i));
         assert_eq!(c.value_mut(), Some(&mut i));
         assert_eq!(c.next(), true);
         i += 1;
-        assert_eq!(c.len(), 10-i);
+        assert_eq!(c.len(), 10 - i);
         assert_eq!(c.value(), Some(&i));
         assert_eq!(c.value_mut(), Some(&mut i));
         i += 1;
@@ -470,7 +467,7 @@ fn remove() {
         let mut i = 1;
         let mut pos = 0;
         for c in &mut c {
-            assert_eq!(c.len(), 10-i);
+            assert_eq!(c.len(), 10 - i);
             assert_eq!(c.position(), pos);
             assert_eq!(c.value(), Some(&i));
             if i == 5 {
@@ -534,11 +531,13 @@ fn splice() {
         assert_eq!(c.position(), 3);
         c.splice(&mut b);
         assert_eq!(c.len(), 2);
-        assert_eq!(c.position(), 3+5);
+        assert_eq!(c.position(), 3 + 5);
     }
     assert_eq!(a.len(), 10);
-    assert_eq!(a, mklist(
-            [ 0, 1, 2, 30, 31, 32, 33, 34, 3, 4].iter().cloned()));
+    assert_eq!(
+        a,
+        mklist([0, 1, 2, 30, 31, 32, 33, 34, 3, 4].iter().cloned())
+    );
     assert_eq!(b, mklist(0..0));
     {
         let mut c = b.cursor();
@@ -586,7 +585,7 @@ fn split() {
         assert_eq!(c.position(), 0);
     }
     assert_eq!(a.len(), 10);
-    assert_eq!(a, mklist( 0..10));
+    assert_eq!(a, mklist(0..10));
 
     assert_eq!(b.len(), 10);
     assert_eq!(b, mklist(10..20));
@@ -611,24 +610,26 @@ fn remove_n() {
 }
 
 //fn collect_cursor<'a, T: Clone>(mut c: Cursor<'a, T>) -> Vec<T> {
-    //let mut r = Vec::new();
-    //loop {
-        //if let Some(value) = c.value() {
-            //r.push(value.clone());
-        //} else {
-            //break;
-        //}
-        //c.next();
-    //}
-    //r
+//let mut r = Vec::new();
+//loop {
+//if let Some(value) = c.value() {
+//r.push(value.clone());
+//} else {
+//break;
+//}
+//c.next();
+//}
+//r
 //}
 
 #[test]
 fn merge_sort() {
     use std::fmt::Debug;
 
-    fn merge<'c, T>(mut a: List<T>, mut b: List<T>)
-        -> List<T> where T: Ord + Debug {
+    fn merge<'c, T>(mut a: List<T>, mut b: List<T>) -> List<T>
+    where
+        T: Ord + Debug,
+    {
         use std::cmp::Ordering::*;
 
         let mut r = List::new();
@@ -641,7 +642,7 @@ fn merge_sort() {
                     if let (Some(a), Some(b)) = (ca.value(), cb.value()) {
                         a.cmp(b)
                     } else {
-                        break
+                        break;
                     }
                 };
                 if cmpr == Less {
@@ -657,8 +658,8 @@ fn merge_sort() {
     }
 
     const LMAX: usize = 100;
-    let mut l = mklist((LMAX/2..LMAX).rev());
-    l.extend(mklist(0..LMAX/2));
+    let mut l = mklist((LMAX / 2..LMAX).rev());
+    l.extend(mklist(0..LMAX / 2));
 
     let mut run_len = 1;
     while run_len < l.len() {
@@ -671,9 +672,8 @@ fn merge_sort() {
                 let mut a = tail;
                 let mut b = a.cursor().split(run_len);
                 tail = b.cursor().split(run_len);
-                cl.splice(&mut merge(a,b));
+                cl.splice(&mut merge(a, b));
             }
-
         }
         run_len *= 2;
     }

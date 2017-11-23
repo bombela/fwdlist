@@ -1,22 +1,18 @@
 use std::mem;
-use ::{List, Node, Cursor};
+use {Cursor, List, Node};
 use super::ListIterMut;
 
 /// Extra operations on mutable iterator - **Unstable API**.
 impl<'a, T> ListIterMut<'a, T> {
     /// Returns a reference to the next element, without moving the iterator.
     pub fn peek_next(&self) -> Option<&T> {
-        self.next_link.as_ref().map(|node| {
-            &node.value
-        })
+        self.next_link.as_ref().map(|node| &node.value)
     }
 
     /// Returns a mutable reference to the next element, without moving the
     /// iterator.
     pub fn peek_next_mut(&mut self) -> Option<&mut T> {
-        self.next_link.as_mut().map(|node| {
-            &mut node.value
-        })
+        self.next_link.as_mut().map(|node| &mut node.value)
     }
 
     /// Insert `v` just after the element most recently returned by `.next()` in
@@ -24,13 +20,11 @@ impl<'a, T> ListIterMut<'a, T> {
     ///
     /// The inserted element does not appear in the iteration.
     pub fn insert_next(&mut self, v: T) {
-        let mut new_node = Node::new_boxed(v, self.next_link.take());
-        let tail_link: *mut _ = &mut new_node.next;
+        let new_node = Node::new_boxed(v, self.next_link.take());
         *self.next_link = Some(new_node);
-        unsafe {
-            self.next_link = &mut *tail_link;
-        }
         *self.list_len += 1;
+        self.len += 1;
+        self.next();
     }
 
     /// Remove the element after the one most recently returned by `.next()` in
@@ -68,7 +62,7 @@ impl<'a, T> ListIterMut<'a, T> {
 /// Convert the mutable iterator into a cursor **unstable* API*.
 impl<'a, T> Into<Cursor<'a, T>> for ListIterMut<'a, T> {
     fn into(self) -> Cursor<'a, T> {
-        Cursor{
+        Cursor {
             position: *self.list_len - self.len,
             list_len: self.list_len,
             next_link: self.next_link,
@@ -108,7 +102,7 @@ fn mutref_iter_advanced() {
     assert_eq!(l.len(), 10);
 
     let mut iter = l.into_iter();
-    for &i in &[0,1,2,3,42,4,5,150,7,9] {
+    for &i in &[0, 1, 2, 3, 42, 4, 5, 150, 7, 9] {
         assert_eq!(iter.next(), Some(i));
     }
 }
