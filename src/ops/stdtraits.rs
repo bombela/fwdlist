@@ -1,7 +1,7 @@
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::iter::FromIterator;
-use {List, Node};
+use List;
 
 /// Drop the list in O(n).
 impl<T> Drop for List<T> {

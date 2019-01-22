@@ -99,7 +99,6 @@
 //!
 //! Happy hacking!
 
-#![allow(unused_features)]
 #![feature(test)]
 
 pub use intoiter::ListIntoIter;
