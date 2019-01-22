@@ -8,3 +8,6 @@ documentation = "http://bombela.github.io/fwdlist"
 description = "A simply linked (forward) list"
 keywords = ["list", "forward", "collection", "simply", "linked"]
 edition = "2018"
+
+[features]
+bench = []

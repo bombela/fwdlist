@@ -1,5 +1,5 @@
-use std::mem;
 use crate::{Cursor, List, Node};
+use std::mem;
 
 impl<T> List<T> {
     /// Return a cursor at the beginning of the list (before the first node).
@@ -27,7 +27,7 @@ impl<'a, T> Cursor<'a, T> {
 
     /// Move the cursor past the following node. Returns `true` on success,
     /// `false` if the cursor is already at the end of the list.
-    pub fn next(&mut self) -> bool {
+    pub fn advance(&mut self) -> bool {
         let next_link: *mut _ = self.next_link;
         unsafe {
             if let Some(ref mut node) = *next_link {
@@ -39,6 +39,7 @@ impl<'a, T> Cursor<'a, T> {
     }
 
     /// The lengths of the tail.
+    /// This is O(1).
     pub fn len(&self) -> usize {
         if cfg!(test) {
             self.list_len
@@ -47,6 +48,11 @@ impl<'a, T> Cursor<'a, T> {
         } else {
             *self.list_len - self.position
         }
+    }
+
+    /// This is O(1).
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     /// The position from the beginning of the list.
@@ -70,7 +76,7 @@ impl<'a, T> Cursor<'a, T> {
         // TODO rewrite without self.next.
         let mut nthped = 0;
         while nthped != nth && self.value().is_some() {
-            self.next();
+            self.advance();
             nthped += 1;
         }
         nthped
@@ -195,7 +201,7 @@ impl<'a, T> Iterator for CursorIntoIter<'a, T> {
     type Item = &'a mut Cursor<'a, T>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if !self.first && !self.cursor.next() {
+        if !self.first && !self.cursor.advance() {
             None
         } else {
             self.first = false;
@@ -236,7 +242,7 @@ impl<'c, 'l, T> Iterator for CursorIterMut<'c, 'l, T> {
     type Item = &'c mut Cursor<'l, T>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if !self.first && !self.cursor.next() {
+        if !self.first && !self.cursor.advance() {
             None
         } else {
             self.first = false;
@@ -277,7 +283,7 @@ fn next() {
         assert_eq!(c.len(), 10 - i);
         assert_eq!(c.value(), Some(&i));
         assert_eq!(c.value_mut(), Some(&mut i));
-        assert_eq!(c.next(), true);
+        assert_eq!(c.advance(), true);
         i += 1;
         assert_eq!(c.len(), 10 - i);
         assert_eq!(c.value(), Some(&i));
@@ -367,7 +373,7 @@ fn insert() {
         assert_eq!(c.position(), 0);
         assert_eq!(c.value(), Some(&42));
 
-        assert_eq!(c.next(), true);
+        assert_eq!(c.advance(), true);
 
         assert_eq!(c.len(), 4);
         assert_eq!(c.position(), 1);
@@ -388,7 +394,7 @@ fn insert() {
         assert_eq!(c.value(), Some(&42));
 
         for _ in 0..5 {
-            assert_eq!(c.next(), true);
+            assert_eq!(c.advance(), true);
         }
 
         assert_eq!(c.len(), 1);
@@ -410,15 +416,15 @@ fn insert() {
         assert_eq!(c.value(), Some(&42));
 
         for _ in 0..6 {
-            assert_eq!(c.next(), true);
+            assert_eq!(c.advance(), true);
         }
-        assert_eq!(c.next(), false);
+        assert_eq!(c.advance(), false);
 
         assert_eq!(c.len(), 0);
         assert_eq!(c.position(), 7);
         assert_eq!(c.value(), None);
 
-        assert_eq!(c.next(), false);
+        assert_eq!(c.advance(), false);
 
         assert_eq!(c.len(), 0);
         assert_eq!(c.position(), 7);
@@ -483,7 +489,6 @@ fn remove() {
     assert_eq!(l.len(), 8);
 }
 
-
 #[test]
 fn truncate() {
     let mut a = mklist(0..20);
@@ -518,7 +523,6 @@ fn truncate() {
     assert_eq!(c, mklist(19..20));
     assert_eq!(d, mklist(0..0));
 }
-
 
 #[test]
 fn splice() {
@@ -590,7 +594,6 @@ fn split() {
     assert_eq!(b.len(), 10);
     assert_eq!(b, mklist(10..20));
 }
-
 
 #[test]
 fn remove_n() {

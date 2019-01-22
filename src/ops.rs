@@ -1,11 +1,11 @@
-use std::ptr;
 use crate::{Link, List};
+use std::ptr;
 
-mod core;
 mod access;
+mod cmp;
+mod core;
 mod extra;
 mod stdtraits;
-mod cmp;
 
 impl<T> List<T> {
     fn last_link(&mut self) -> &mut Link<T> {
@@ -61,13 +61,11 @@ impl<T> List<T> {
     }
 }
 
-#[cfg(test)]
+#[cfg(feature = "bench")]
 mod benchs {
-
     extern crate test;
-
+    use test::{black_box, Bencher};
     use crate::List;
-    use self::test::{black_box, Bencher};
 
     static BIGLIST_SIZE: usize = 1024 * 1024;
 
@@ -100,7 +98,6 @@ mod benchs {
         let node = link.as_ref().unwrap();
         assert_eq!(node.value, BIGLIST_SIZE as i64 - 1);
     }
-
 
     #[bench]
     fn penultimate_safe(b: &mut Bencher) {

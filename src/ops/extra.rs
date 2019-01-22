@@ -1,5 +1,5 @@
-use std::mem;
 use crate::List;
+use std::mem;
 
 /// Extra operations on the list - **Unstable API**.
 impl<T> List<T> {

@@ -99,17 +99,17 @@
 //!
 //! Happy hacking!
 
-#![feature(test)]
+#![cfg_attr(feature = "bench", feature(test))]
 
 pub use crate::intoiter::ListIntoIter;
 pub use crate::iter::ListIter;
 pub use crate::itermut::ListIterMut;
 
-mod ops;
+mod cursor;
 mod intoiter;
 mod iter;
 mod itermut;
-mod cursor;
+mod ops;
 
 /// A simply linked list.
 pub struct List<T> {
@@ -136,7 +136,7 @@ pub struct List<T> {
 /// ```plain
 ///  |0 1 2 3 4
 /// ```
-/// After advancing the cursor once `c.next()`:
+/// After advancing the cursor once `c.advance()`:
 ///
 /// ```plain
 ///   0|1 2 3 4
@@ -169,11 +169,8 @@ struct Node<T> {
 }
 
 impl<T> Node<T> {
-    fn new_boxed(v: T, next: Link<T>) -> Box<Node<T>> {
-        Box::new(Node {
-            value: v,
-            next: next,
-        })
+    fn new_boxed(value: T, next: Link<T>) -> Box<Node<T>> {
+        Box::new(Node { value, next })
     }
 
     fn take(self) -> (T, Link<T>) {

@@ -1,6 +1,6 @@
-use std::mem;
-use crate::{Cursor, List, Node};
 use super::ListIterMut;
+use crate::{Cursor, List, Node};
+use std::mem;
 
 /// Extra operations on mutable iterator - **Unstable API**.
 impl<'a, T> ListIterMut<'a, T> {
