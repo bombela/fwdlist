@@ -1,5 +1,5 @@
 use std::ptr;
-use {Link, List};
+use crate::{Link, List};
 
 mod core;
 mod access;
@@ -66,7 +66,7 @@ mod benchs {
 
     extern crate test;
 
-    use List;
+    use crate::List;
     use self::test::{black_box, Bencher};
 
     static BIGLIST_SIZE: usize = 1024 * 1024;

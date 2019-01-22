@@ -101,9 +101,9 @@
 
 #![feature(test)]
 
-pub use intoiter::ListIntoIter;
-pub use iter::ListIter;
-pub use itermut::ListIterMut;
+pub use crate::intoiter::ListIntoIter;
+pub use crate::iter::ListIter;
+pub use crate::itermut::ListIterMut;
 
 mod ops;
 mod intoiter;
@@ -154,7 +154,7 @@ pub struct List<T> {
 ///
 /// With a cursor, you can truncate the list, insert and removes nodes, etc.
 ///
-pub struct Cursor<'a, T: 'a> {
+pub struct Cursor<'a, T> {
     next_link: &'a mut Link<T>,
     list_len: &'a mut usize,
     position: usize,

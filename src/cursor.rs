@@ -1,9 +1,9 @@
 use std::mem;
-use {Cursor, List, Node};
+use crate::{Cursor, List, Node};
 
 impl<T> List<T> {
     /// Return a cursor at the beginning of the list (before the first node).
-    pub fn cursor(&mut self) -> Cursor<T> {
+    pub fn cursor(&mut self) -> Cursor<'_, T> {
         Cursor {
             position: 0,
             list_len: &mut self.len,
@@ -55,7 +55,7 @@ impl<'a, T> Cursor<'a, T> {
     }
 
     /// Returns a copy of the cursor, freezing `self` while the copy is alive.
-    pub fn checkpoint(&mut self) -> Cursor<T> {
+    pub fn checkpoint(&mut self) -> Cursor<'_, T> {
         Cursor {
             position: self.position,
             list_len: self.list_len,
@@ -174,7 +174,7 @@ impl<'a, T> Cursor<'a, T> {
 }
 
 // TODO cursor iter?
-pub struct CursorIntoIter<'a, T: 'a> {
+pub struct CursorIntoIter<'a, T> {
     cursor: Cursor<'a, T>,
     first: bool,
 }
@@ -209,7 +209,7 @@ impl<'a, T> Iterator for CursorIntoIter<'a, T> {
     }
 }
 
-pub struct CursorIterMut<'c, 'l: 'c, T: 'l> {
+pub struct CursorIterMut<'c, 'l: 'c, T> {
     cursor: &'c mut Cursor<'l, T>,
     first: bool,
 }
@@ -273,7 +273,7 @@ fn minimal() {
 fn next() {
     let mut l = mklist(0..10);
     let mut i = 0;
-    for mut c in l.cursor() {
+    for c in l.cursor() {
         assert_eq!(c.len(), 10 - i);
         assert_eq!(c.value(), Some(&i));
         assert_eq!(c.value_mut(), Some(&mut i));
@@ -291,7 +291,7 @@ fn next() {
 fn checkpoint() {
     let mut l = mklist(0..10);
     let mut i = 0;
-    for mut c in l.cursor() {
+    for c in l.cursor() {
         assert_eq!(c.value(), Some(&i));
         {
             let c2 = c.checkpoint();

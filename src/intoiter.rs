@@ -1,4 +1,4 @@
-use List;
+use crate::List;
 
 /// Iterator consuming a list.
 #[derive(Clone)]

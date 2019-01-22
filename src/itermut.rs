@@ -1,9 +1,9 @@
-use {Link, List};
+use crate::{Link, List};
 
 mod extra;
 
 /// Mutable iterator over a list.
-pub struct ListIterMut<'a, T: 'a> {
+pub struct ListIterMut<'a, T> {
     next_link: &'a mut Link<T>,
     len: usize,
     list_len: &'a mut usize,
@@ -11,7 +11,7 @@ pub struct ListIterMut<'a, T: 'a> {
 
 impl<T> List<T> {
     /// Returns an iterator over the list yielding mutable references.
-    pub fn iter_mut(&mut self) -> ListIterMut<T> {
+    pub fn iter_mut(&mut self) -> ListIterMut<'_, T> {
         ListIterMut {
             len: self.len,
             list_len: &mut self.len,

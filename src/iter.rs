@@ -1,10 +1,10 @@
-use {Link, List};
+use crate::{Link, List};
 
 /// Read-only iterator over a list.
 // Can't use derive(Clone) here because it will require an extra Clone bound for
 // T which we don't need.
 // #[derive(Clone)]
-pub struct ListIter<'a, T: 'a> {
+pub struct ListIter<'a, T> {
     next_link: &'a Link<T>,
     len: usize,
 }
@@ -20,7 +20,7 @@ impl<'a, T> Clone for ListIter<'a, T> {
 
 impl<T> List<T> {
     /// Returns an iterator over the list yielding read-only references.
-    pub fn iter(&self) -> ListIter<T> {
+    pub fn iter(&self) -> ListIter<'_, T> {
         ListIter {
             next_link: &self.head,
             len: self.len,

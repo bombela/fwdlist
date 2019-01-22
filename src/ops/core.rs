@@ -1,4 +1,4 @@
-use {List, Node};
+use crate::{List, Node};
 
 impl<T> List<T> {
     /// A new empty list.

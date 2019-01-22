@@ -1,5 +1,5 @@
 use std::mem;
-use {Cursor, List, Node};
+use crate::{Cursor, List, Node};
 use super::ListIterMut;
 
 /// Extra operations on mutable iterator - **Unstable API**.

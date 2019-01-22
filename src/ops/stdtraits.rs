@@ -1,7 +1,7 @@
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::iter::FromIterator;
-use List;
+use crate::List;
 
 /// Drop the list in O(n).
 impl<T> Drop for List<T> {
@@ -19,7 +19,7 @@ impl<T> Default for List<T> {
 
 /// A debug formatter.
 impl<T: fmt::Debug> fmt::Debug for List<T> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.iter()
             .fold(f.debug_list(), |mut b, e| {
                 b.entry(e);
